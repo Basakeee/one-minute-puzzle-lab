@@ -313,8 +313,8 @@ function startGame(index = activeIndex) {
   state = parseMap(stage);
   timeLeft = getStageTime();
   message.textContent = "ใช้ WASD/ลูกศร หรือปุ่มด้านล่าง กด Space/Action เพื่อโต้ตอบ";
-  gameTitle.textContent = `${game.title} - Lv.${level}`;
-  gameTag.textContent = `${game.tag} / Difficulty ${getDifficulty() + 1}`;
+  gameTitle.textContent = `${game.title} - ด่าน ${level}`;
+  gameTag.textContent = `${game.tag} / แบบ ${getStageNumber()}`;
   gameGoal.textContent = `${game.goal} เวลาเริ่มต้นด่านนี้ ${timeLeft} วินาที`;
   renderGameList();
   render();
@@ -506,7 +506,7 @@ function checkWin() {
     state.won = true;
     const bonus = Math.max(10, Math.round(timeLeft) + level * 5);
     score += bonus;
-    message.textContent = `ผ่านด่าน! +${bonus} คะแนน กำลังไปด่านต่อไป`;
+    message.textContent = `ผ่านด่าน! +${bonus} คะแนน กำลังไปด่าน ${level + 1}`;
     clearInterval(timerId);
     nextStageId = setTimeout(nextStage, 1100);
   }
@@ -514,21 +514,21 @@ function checkWin() {
 
 function nextStage() {
   level += 1;
-  activeIndex = (activeIndex + 1) % games.length;
   startGame(activeIndex);
 }
 
 function getStage(game) {
   const variants = harderStages[game.id] || [game];
-  return variants[Math.min(getDifficulty(), variants.length - 1)];
+  return variants[Math.min(level - 1, variants.length - 1)];
 }
 
-function getDifficulty() {
-  return Math.floor((level - 1) / games.length);
+function getStageNumber() {
+  const variants = harderStages[games[activeIndex].id] || [games[activeIndex]];
+  return Math.min(level, variants.length);
 }
 
 function getStageTime() {
-  return Math.max(30, 60 - getDifficulty() * 5);
+  return Math.max(30, 60 - (level - 1) * 5);
 }
 
 function restartTimer() {
