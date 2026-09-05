@@ -2,7 +2,7 @@
 
 Static HTML prototype for five simple 2D puzzle game ideas designed to end in under one minute per stage.
 
-Clearing a stage automatically starts the next stage of the same selected puzzle. The run level increases every clear, harder map variants appear over time, and the stage timer tightens from 60 seconds down to a 30 second minimum.
+Clearing a stage automatically starts the next stage of the same selected puzzle. Each puzzle has five map variants, then repeats the hardest layout while the timer keeps tightening from 60 seconds down to a 30 second minimum.
 
 ## Ideas
 
