@@ -306,7 +306,7 @@ h2 {
 
   .hud {
     display: grid;
-    grid-template-columns: 1fr 1fr 46px;
+    grid-template-columns: 1fr 1fr 1fr 46px;
   }
 
   .board {

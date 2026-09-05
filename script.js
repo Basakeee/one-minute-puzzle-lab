@@ -6,6 +6,7 @@ const gameGoal = document.querySelector("#gameGoal");
 const message = document.querySelector("#message");
 const scoreEl = document.querySelector("#score");
 const timerEl = document.querySelector("#timer");
+const levelEl = document.querySelector("#level");
 const resetBtn = document.querySelector("#resetBtn");
 const actionBtn = document.querySelector("#actionBtn");
 
@@ -98,18 +99,223 @@ const games = [
 let activeIndex = 0;
 let state;
 let score = 0;
+let level = 1;
 let timeLeft = 60;
 let timerId;
+let nextStageId;
+
+const harderStages = {
+  crate: [
+    {
+      size: 7,
+      map: [
+        "#######",
+        "#P..#E#",
+        "#.#...#",
+        "#..C..#",
+        "#..G..#",
+        "#.....#",
+        "#######",
+      ],
+    },
+    {
+      size: 8,
+      map: [
+        "########",
+        "#P..#..#",
+        "#.#.#E.#",
+        "#..C...#",
+        "###.#..#",
+        "#...G..#",
+        "#......#",
+        "########",
+      ],
+    },
+    {
+      size: 9,
+      map: [
+        "#########",
+        "#P.....E#",
+        "#.#...#.#",
+        "#...C...#",
+        "#.#...#.#",
+        "#...G...#",
+        "#.#...#.#",
+        "#.......#",
+        "#########",
+      ],
+    },
+  ],
+  circuit: [
+    {
+      size: 6,
+      map: [
+        "######",
+        "#P.N.#",
+        "#.##.#",
+        "#N..N#",
+        "#..N.#",
+        "######",
+      ],
+    },
+    {
+      size: 7,
+      map: [
+        "#######",
+        "#P.N..#",
+        "#.###.#",
+        "#N...N#",
+        "#.###.#",
+        "#N..N.#",
+        "#######",
+      ],
+    },
+    {
+      size: 8,
+      map: [
+        "########",
+        "#P.N...#",
+        "#.###N.#",
+        "#N.....#",
+        "###.####",
+        "#N..N..#",
+        "#...N..#",
+        "########",
+      ],
+    },
+  ],
+  locks: [
+    {
+      size: 7,
+      map: [
+        "#######",
+        "#P.K..#",
+        "#.###.#",
+        "#K..#E#",
+        "#.#...#",
+        "#..K..#",
+        "#######",
+      ],
+    },
+    {
+      size: 8,
+      map: [
+        "########",
+        "#P.K...#",
+        "#.####.#",
+        "#K...#E#",
+        "###.#..#",
+        "#..K#K.#",
+        "#......#",
+        "########",
+      ],
+    },
+    {
+      size: 9,
+      map: [
+        "#########",
+        "#P.K....#",
+        "#.#####.#",
+        "#K....#E#",
+        "###.#.#.#",
+        "#..K#...#",
+        "#.###K#.#",
+        "#....K..#",
+        "#########",
+      ],
+    },
+  ],
+  bridge: [
+    {
+      size: 7,
+      map: [
+        "#######",
+        "#P.B.E#",
+        "#.###.#",
+        "#R...B#",
+        "#.###.#",
+        "#B...R#",
+        "#######",
+      ],
+    },
+    {
+      size: 8,
+      map: [
+        "########",
+        "#P.B..E#",
+        "#.####.#",
+        "#R...B.#",
+        "#.##.#.#",
+        "#B..R..#",
+        "#..B.R.#",
+        "########",
+      ],
+    },
+    {
+      size: 9,
+      map: [
+        "#########",
+        "#P.B...E#",
+        "#.#####.#",
+        "#R...B..#",
+        "###.#.###",
+        "#B..R..B#",
+        "#.###.#.#",
+        "#..B.R..#",
+        "#########",
+      ],
+    },
+  ],
+  memory: [
+    {
+      size: 6,
+      map: [
+        "######",
+        "#P.1.#",
+        "#.##.#",
+        "#3..2#",
+        "#..4E#",
+        "######",
+      ],
+    },
+    {
+      size: 7,
+      map: [
+        "#######",
+        "#P..1.#",
+        "#.###.#",
+        "#3...2#",
+        "#.###.#",
+        "#..4.E#",
+        "#######",
+      ],
+    },
+    {
+      size: 8,
+      map: [
+        "########",
+        "#P...1.#",
+        "#.####.#",
+        "#3.....#",
+        "###.##.#",
+        "#..4..2#",
+        "#.....E#",
+        "########",
+      ],
+    },
+  ],
+};
 
 function startGame(index = activeIndex) {
   activeIndex = index;
   const game = games[activeIndex];
-  state = parseMap(game);
-  timeLeft = 60;
+  const stage = getStage(game);
+  state = parseMap(stage);
+  timeLeft = getStageTime();
   message.textContent = "ใช้ WASD/ลูกศร หรือปุ่มด้านล่าง กด Space/Action เพื่อโต้ตอบ";
-  gameTitle.textContent = game.title;
-  gameTag.textContent = game.tag;
-  gameGoal.textContent = game.goal;
+  gameTitle.textContent = `${game.title} - Lv.${level}`;
+  gameTag.textContent = `${game.tag} / Difficulty ${getDifficulty() + 1}`;
+  gameGoal.textContent = `${game.goal} เวลาเริ่มต้นด่านนี้ ${timeLeft} วินาที`;
   renderGameList();
   render();
   restartTimer();
@@ -130,6 +336,7 @@ function parseMap(game) {
     exit: null,
     bridgeBlue: true,
     keysGot: 0,
+    totalKeys: 0,
     memoryNext: 1,
     won: false,
   };
@@ -143,7 +350,10 @@ function parseMap(game) {
       if (char === "C") data.crates.add(key);
       if (char === "G") data.goals.add(key);
       if (char === "N") data.nodes.set(key, false);
-      if (char === "K") data.keys.add(key);
+      if (char === "K") {
+        data.keys.add(key);
+        data.totalKeys += 1;
+      }
       if (char === "B") data.bridges.set(key, "blue");
       if (char === "R") data.bridges.set(key, "red");
       if ("1234".includes(char)) data.runes.set(key, Number(char));
@@ -158,7 +368,13 @@ function renderGameList() {
     const button = document.createElement("button");
     button.className = `game-card${index === activeIndex ? " active" : ""}`;
     button.innerHTML = `<strong>${game.title}</strong><p>${game.idea}</p>`;
-    button.addEventListener("click", () => startGame(index));
+    button.addEventListener("click", () => {
+      clearTimeout(nextStageId);
+      activeIndex = index;
+      level = 1;
+      score = 0;
+      startGame(index);
+    });
     gameList.append(button);
   });
 }
@@ -204,6 +420,7 @@ function render() {
     }
   }
   scoreEl.textContent = String(score);
+  levelEl.textContent = String(level);
 }
 
 function move(dx, dy) {
@@ -226,7 +443,7 @@ function move(dx, dy) {
   const playerKey = posKey(nx, ny);
   if (state.keys.delete(playerKey)) {
     state.keysGot += 1;
-    message.textContent = `เก็บกุญแจแล้ว ${state.keysGot}/3`;
+    message.textContent = `เก็บกุญแจแล้ว ${state.keysGot}/${state.totalKeys}`;
   }
   checkWin();
   render();
@@ -287,11 +504,31 @@ function checkWin() {
 
   if (won) {
     state.won = true;
-    const bonus = Math.max(10, Math.round(timeLeft));
+    const bonus = Math.max(10, Math.round(timeLeft) + level * 5);
     score += bonus;
-    message.textContent = `ผ่านด่าน! +${bonus} คะแนน`;
+    message.textContent = `ผ่านด่าน! +${bonus} คะแนน กำลังไปด่านต่อไป`;
     clearInterval(timerId);
+    nextStageId = setTimeout(nextStage, 1100);
   }
+}
+
+function nextStage() {
+  level += 1;
+  activeIndex = (activeIndex + 1) % games.length;
+  startGame(activeIndex);
+}
+
+function getStage(game) {
+  const variants = harderStages[game.id] || [game];
+  return variants[Math.min(getDifficulty(), variants.length - 1)];
+}
+
+function getDifficulty() {
+  return Math.floor((level - 1) / games.length);
+}
+
+function getStageTime() {
+  return Math.max(30, 60 - getDifficulty() * 5);
 }
 
 function restartTimer() {
@@ -348,7 +585,10 @@ document.querySelectorAll("[data-dir]").forEach((button) => {
   });
 });
 
-resetBtn.addEventListener("click", () => startGame(activeIndex));
+resetBtn.addEventListener("click", () => {
+  clearTimeout(nextStageId);
+  startGame(activeIndex);
+});
 actionBtn.addEventListener("click", action);
 
 startGame(0);

@@ -2,6 +2,8 @@
 
 Static HTML prototype for five simple 2D puzzle game ideas designed to end in under one minute per stage.
 
+Clearing a stage automatically starts the next puzzle. The run level increases every clear, harder map variants appear over time, and the stage timer tightens from 60 seconds down to a 30 second minimum.
+
 ## Ideas
 
 - `ลังหนีประตู`: mini Sokoban. Push one crate onto a goal tile, then reach the exit.
