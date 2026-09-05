@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>One Minute Puzzle Lab</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="topbar" aria-label="Game status">
+        <div>
+          <p class="eyebrow">Prototype pack</p>
+          <h1>One Minute Puzzle Lab</h1>
+        </div>
+        <div class="hud">
+          <div class="hud-item">
+            <span>เวลา</span>
+            <strong id="timer">60.0</strong>
+          </div>
+          <div class="hud-item">
+            <span>คะแนน</span>
+            <strong id="score">0</strong>
+          </div>
+          <button id="resetBtn" class="icon-button" title="เริ่มใหม่" aria-label="เริ่มใหม่">↻</button>
+        </div>
+      </section>
+
+      <section class="layout">
+        <aside class="panel">
+          <h2>ไอเดียเกม 1 นาที</h2>
+          <div id="gameList" class="game-list"></div>
+        </aside>
+
+        <section class="stage-wrap">
+          <div class="stage-head">
+            <div>
+              <p id="gameTag" class="eyebrow">Puzzle</p>
+              <h2 id="gameTitle">Loading</h2>
+            </div>
+            <p id="gameGoal" class="goal"></p>
+          </div>
+          <div id="board" class="board" tabindex="0" aria-label="Puzzle board"></div>
+          <div class="controls">
+            <button data-dir="up" aria-label="ขึ้น">↑</button>
+            <button data-dir="left" aria-label="ซ้าย">←</button>
+            <button data-dir="down" aria-label="ลง">↓</button>
+            <button data-dir="right" aria-label="ขวา">→</button>
+            <button id="actionBtn">Action</button>
+          </div>
+          <p id="message" class="message"></p>
+        </section>
+      </section>
+    </main>
+    <script src="script.js"></script>
+  </body>
+</html>
